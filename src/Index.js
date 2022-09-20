@@ -1,11 +1,12 @@
-const express = require("express")
-const Router = require("./route/route.js")
-const mongoose = require("mongoose")
-const bodyParser=require("body-parser")
-const app = express()
+const express= require("express")
+const bodyParser= require("body-parser")
+const route= require("./route/route")
+const mongoose= require("mongoose")
+const app= express();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(bodyParser.json())
 
 
 mongoose.connect("mongodb+srv://yachika03:wkaTIq3zkjIou3YI@cluster0.t9qdtvx.mongodb.net/group34Database",                                                 
@@ -14,7 +15,7 @@ mongoose.connect("mongodb+srv://yachika03:wkaTIq3zkjIou3YI@cluster0.t9qdtvx.mong
    }).then(()=> console.log("MongoDB is connected"))
     .catch((err)=>console.log(err))
 
-    app.use('/'  , Router)
+    app.use('/', route)
 
     app.listen(process.env.PORT|| 3000, function() {
         console.log("Express app running on port"+(process.env.PORT|| 3000) )
