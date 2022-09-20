@@ -12,12 +12,15 @@ const isValidRequest = function (object) {
 const isValidTitle = function(title){
     return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1
   }
+  const nameregex = /^[a-zA-Z ]*$/
+  phoneregex=/^([6-9]\d{9})$/
+  emailregex=/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/
+  passwordregex="/^(?=.\d)(?=.[a-zA-Z]).{8,15}$/"
+
 const createuser=async function(req,res){
     try {
-        const nameregex = /^[a-zA-Z ]*$/
-        phoneregex=/^([6-9]\d{9})$/
-        emailregex=/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/
-        passwordregex="/^(?=.\d)(?=.[a-zA-Z]).{8,15}$/"
+      
+       
         let reqquery=req.query
         if(isValidRequest(reqquery))
          return res.status(400).send({ status: false, msg: "invalidRequest" })
@@ -49,7 +52,7 @@ const createuser=async function(req,res){
          return res.status(400).send({ status: false, msg: "email already registered" })
         if(!isValid(password))
          return res.status(400).send({status: false, msg: "password is required"})
-        if (email.match(passwordregex))
+        if (password.match(passwordregex))
          return res.status(400).send({status: false, msg: "password should be valid"})
         if(!isValid(address))
          return res.status(400).send({status: false, msg: "address is required"})
@@ -68,6 +71,10 @@ const loginUser = async function (req, res) {
         if (!emailId || !password) {
             return res.status(400).send({ status: false, msg: "please enter email and password" })
         }
+        if (emailId.match(emailregex))
+         return res.status(400).send({status: false, msg: "email should be valid"})
+         if (password.match(passwordregex))
+         return res.status(400).send({status: false, msg: "password should be valid"})
     
         const user = await userModel.findOne({ email: emailId, password: password })
         if (!user) {
@@ -78,10 +85,10 @@ const loginUser = async function (req, res) {
                  expiresIn: '365d' 
                 },"Group34-Project-BookManagment");
             res.setHeader("x-api-key", token);
-            res.status(201).send({ status: true,message: 'Success', data: token })
+           return res.status(201).send({ status: true,message: 'Success', data: token })
         }
     } catch (error) {
-        res.status(500).send({ status: false, error: error.message })
+        return res.status(500).send({ status: false, error: error.message })
     }
     
     }
