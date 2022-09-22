@@ -23,5 +23,5 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.3.1",
     "nodemon": "^2.0.15"
-}
+  }
 }

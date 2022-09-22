@@ -8,9 +8,9 @@ const bookSchema = new mongoose.Schema({
         userId: {type:objectId,required:true, ref:"User"},
         ISBN: {type:String, required:true, unique:true},
         category: {type:String,required:true},
-        subcategory: [String],
+        subcategory: {type:String,required:true},
         reviews: {type:Number, default: 0}, //, comment: Holds number of reviews of this book
-        deletedAt: {type:Date,default:null}, 
+        deletedAt: {type:Date,default:undefined}, 
         isDeleted: {type:Boolean, default: false},
         releasedAt: {type:Date, required:true} //, format("YYYY-MM-DD")
         

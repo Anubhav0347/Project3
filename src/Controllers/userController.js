@@ -29,7 +29,7 @@ const createuser = async function (req, res) {
     try {
         let reqquery = req.query
         if (isValidRequest(reqquery))
-            return res.status(400).send({ status: false, msg: "invalidRequest" })
+            return res.status(400).send({ status: false, msg: "Data can passes only through request body" })
         let reqbody = req.body
         if (!isValidRequest(reqbody))
             return res.status(400).send({ status: false, msg: "body should not be empty" })
@@ -61,7 +61,7 @@ const createuser = async function (req, res) {
         if (!password.match(passwordregex))
             return res.status(400).send({ status: false, msg: "password should be valid" })
         if (address) {
-            if (Object.keys(address).length == 0) return res.status(400).send({ status: false, msg: "Address must contain something" })
+            if (Object.keys(address).length == 0) return res.status(400).send({ status: false, msg: "Address must contain street, city, pincode" })
             else {
                 const { street, city, pincode } = address
                 if (!(isValid(street) || isValid(city) || isValid(pincode))) return res.status(400).send({ status: false, msg: "We are looking for street ,city or pincode value only inside Address Object" })
@@ -110,7 +110,7 @@ const loginUser = async function (req, res) {
             } else {
                 const token = jwt.sign({
                     userId: user._id.toString(),
-                    expiresIn: '365d'
+                    exp: Math.floor(Date.now()/100)
                 }, "Group34-Project-BookManagment");
                 res.setHeader("x-api-key", token);
                 return res.status(201).send({ status: true, message: 'Success', data: token })
