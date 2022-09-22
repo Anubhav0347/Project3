@@ -91,20 +91,24 @@
         const bookId=req.params.bookId
          if(!isValidObjectId(bookId))
         return res.status(400).send({status:false,msg:"Please enter valid blogId in params"})
+       
         let book=await bookModel.findById(bookId)
+       
         if(book==null  || book.isDeleted==true){
             return res.status(404).send({status:false,message:"No book found with this bookId or it may be deleted"})
         } 
         const reviewId=req.params.reviewId
         if(!isValidObjectId(reviewId))
         return res.status(400).send({status:false,msg:"Please enter valid reviewId in params"})
-        console.log(reviewId)
-        const checkreview=await bookModel.findById(reviewId)
-        console.log(checkreview)
+       
+        
+        const checkreview=await reviewModel.findById(reviewId)
+       
         if(checkreview==null || checkreview.isDeleted==true ){
             return res.status(404).send({status:false,message:"No review found with this reviewId or may be it deleted"})
         } 
-        if(reviewId.bookId !== bookId){
+      
+        if((checkreview.bookId).toString() !== bookId){
             return res.status(400).send({status:false,message:"bookId in reviewId is not matches with which you provided"})
         }
        const requestBody=req.body
@@ -128,14 +132,27 @@
        }
        
        const updatedata=await reviewModel.findByIdAndUpdate(
-        {reviewId},///condition
+        {_id:reviewId},///condition
         { dataForUpdate},//updation
-        {new:true})
+        {new:true}).select({isDeleted:0,"__v":0,createdAt:0,updatedAt:0});
         
-        book['reviewsData']=updatedata
-       return res.status(200).send({status:true,message:"Success",data:book})
+        const requiredOutput={
+            "title": book.title,
+             "excerpt":book.excerpt,
+            "userId":book.userId,
+             "category":book.category,
+            "subcategory" :book.subcategory,
+            "isDeleted":book.isDeleted,
+            "reviews":book.reviews,
+            "releasedAt":book.releasedAt,
+            "createdAt":book.createdAt,
+           "updatedAt":book.updatedAt,
+         "reviewsData":updatedata
+          }
+
+       return res.status(200).send({status:true,message:"Success",data:requiredOutput})
     }
-    catch(errr){
+    catch(err){
         return res.status(500).send({status:false,error:err.message})
     }
     
