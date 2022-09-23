@@ -32,7 +32,7 @@
     
 
     const reviewedByRegex=/^[a-zA-Z\. ]*$/
-    const ratingRegex=/^[0-5](.[0-9][0-9]?)?$/
+    const ratingRegex=/^[0-5]$/                                          ///^[0-5](.[0-9][0-9]?)?$/
     //===================================POST API Review=======================================================
       
     const createReview = async function (req, res) {
@@ -43,7 +43,7 @@
             const bookId=req.params.bookId
             if(!isValidObjectId(bookId)) return res.status(400).send({status:false,msg:"book ID not valid"})
             let bookbyBookId=await bookModel.findOne({_id:bookId, isDeleted:false})
-            if(!bookbyBookId) return res.status(400).send({status:false,msg:"No book Id exist"})
+            if(!bookbyBookId) return res.status(400).send({status:false,msg:`No book exist with this ${bookId} bookId`})
             
             let {reviewedBy,rating, review}=reviewData 
             reviewData['reviewedAt']=Date.now()
@@ -52,14 +52,15 @@
             if(!isValidRequest(reviewData)) return res.status(400).send({status: false, msg:"body is empty!"});
 
             //***************REVIEWED BY VALIDATIONS****************** 
-            if(!isValid(reviewedBy)) return res.status(400).send({status:false,msg:"reviewed by is required"});
-        
-            if((reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"reviewed by is not in proper format"});
+            if(reviewedBy){        
+            if((reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"Please enter valid reviewer's name"});
+           }
+           reviewedBy="Guest"
     
             //***************RATING VALIDATIONS******************
             if(!(rating)) return res.status(400).send({status:false,msg:"rating is required"})
              
-            if(!(ratingRegex.test(rating))) return res.status(400).send({status: false, msg:"rating is not in proper format"});
+            if(!(ratingRegex.test(rating))) return res.status(400).send({status: false, msg:"rating should be number from 0 to 5"});
               
             //***************REVIEW VALIDATIONS******************
             if(!review) return res.status(400).send({status:false,msg:"review is invalid"})
