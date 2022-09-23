@@ -190,7 +190,7 @@
                 {$set:{"reviews":book.reviews-1}}, 
                 {new:true})
     
-           return res.status(200).send({ status: true,message:"Deleted Successfully",data:updatebook });
+           return res.status(200).send({ status: true,message:"Deleted Successfully",data:updatebook });////consfused about output
           } catch (error) {
             res.status(500).send({ status: false, Error: error.message });
           }
