@@ -17,18 +17,18 @@
       return Object.keys(object).length>0
       }
     
-      const isValidRvwd = function (value) {
-        if (typeof value === "undefined" || value === null) return false;
-        if ( typeof value === Date && value.trim().length > 0) return true;
-        return false;
-    };
+    //   const isValidRvwd = function (value) {
+    //     if (typeof value === "undefined" || value === null) return false;
+    //     if ( typeof value === Date && value.trim().length > 0) return true;
+    //     return false;
+    // };
     
-    const isValidRating = function (value) {
-      if (typeof value === "undefined" || value === null) return false;
-      if ( typeof value === "Number" && value.trim().length > 0) return true;
+    // const isValidRating = function (value) {
+    //   if (typeof value === "undefined" || value === null) return false;
+    //   if ( typeof value === "Number" && value.trim().length > 0) return true;
       
-      return false;
-    };
+    //   return false;
+    // };
     
 
     const reviewedByRegex=/^[a-zA-Z\. ]*$/
@@ -70,7 +70,7 @@
             let updateData= await bookModel.findOneAndUpdate({"_id":bookId},
                 {$set:{"reviews":bookbyBookId.reviews+1}}, 
                 {new:true})
-               
+             // saveData._doc['reviewData'] 
              saveData['isDeleted']=undefined
              saveData['__v']=undefined
              saveData['reviewedAt']=undefined
@@ -91,7 +91,7 @@
             if (isValidRequest(req.query)) return res.status(400).send({ status: false, msg: "Data can passes only through Body" })
         const bookId=req.params.bookId
          if(!isValidObjectId(bookId))
-        return res.status(400).send({status:false,msg:"Please enter valid blogId in params"})
+        return res.status(400).send({status:false,msg:"Please enter valid bookId in params"})
        
         let book=await bookModel.findById(bookId)
        
@@ -191,7 +191,7 @@
                 {$set:{"reviews":book.reviews-1}}, 
                 {new:true})
     
-           return res.status(200).send({ status: true,message:"Deleted Successfully",data:updatebook });////consfused about output
+           return res.status(200).send({ status: true,message:"Deleted Successfully",data:updatebook });        ////consfused about output
           } catch (error) {
             res.status(500).send({ status: false, Error: error.message });
           }

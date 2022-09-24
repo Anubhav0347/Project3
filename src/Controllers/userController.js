@@ -29,55 +29,55 @@ const createuser = async function (req, res) {
     try {
         let reqquery = req.query
         if (isValidRequest(reqquery))
-            return res.status(400).send({ status: false, msg: "Data can passes only through request body" })
+            return res.status(400).send({ status: false, message: "Data can passes only through request body" })
         let reqbody = req.body
         if (!isValidRequest(reqbody))
-            return res.status(400).send({ status: false, msg: "body should not be empty" })
+            return res.status(400).send({ status: false, message: "body should not be empty" })
         const { title, name, phone, email, password, address } = reqbody
         if (!isValid(title))
-            return res.status(400).send({ status: false, msg: "title is required" })
+            return res.status(400).send({ status: false, message: "title is required" })
         if (!isValidTitle(title))
-            return res.status(400).send({ status: false, msg: "title shoud be among Mr, Mrs, and Miss" })
+            return res.status(400).send({ status: false, message: "title shoud be among Mr, Mrs, and Miss" })
         if (!isValid(name))
-            return res.status(400).send({ status: false, msg: "name is required" })
+            return res.status(400).send({ status: false, message: "name is required" })
         if (!name.match(nameregex))
-            return res.status(400).send({ status: false, msg: "name must be in a valid format" })
+            return res.status(400).send({ status: false, message: "name must be in a valid format" })
         if (!isValid(phone))
-            return res.status(400).send({ status: false, msg: "phone number must be prasent" })
+            return res.status(400).send({ status: false, message: "phone number must be prasent" })
         if (!phone.match(phoneregex))
-            return res.status(400).send({ status: false, msg: "phone number must be in a valid format" })
+            return res.status(400).send({ status: false, message: "phone number must be in a valid format" })
         const isPhoneAlreadyUsed = await userModel.findOne({ phone: phone })
         if (isPhoneAlreadyUsed)
-            return res.status(400).send({ status: false, msg: "phone number already registered" })
+            return res.status(400).send({ status: false, message: "phone number already registered" })
         if (!isValid(email))
-            return res.status(400).send({ status: false, msg: "email is required" })
+            return res.status(400).send({ status: false, message: "email is required" })
         if (!email.match(emailregex))
-            return res.status(400).send({ status: false, msg: "email should be valid" })
+            return res.status(400).send({ status: false, message: "email should be valid" })
         let emailAlreadyUsed = await userModel.findOne({ email: email })
         if (emailAlreadyUsed)
-            return res.status(400).send({ status: false, msg: "email already registered" })
+            return res.status(400).send({ status: false, message: "email already registered" })
         if (!isValid(password))
-            return res.status(400).send({ status: false, msg: "password is required" })
+            return res.status(400).send({ status: false, message: "password is required" })
         if (!password.match(passwordregex))
-            return res.status(400).send({ status: false, msg: "password should be valid" })
+            return res.status(400).send({ status: false, message: "password should be valid" })
         if (address) {
-            if (Object.keys(address).length == 0) return res.status(400).send({ status: false, msg: "Address must contain street, city, pincode" })
+            if (Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Address must contain street, city, pincode" })
             else {
                 const { street, city, pincode } = address
-                if (!(isValid(street) || isValid(city) || isValid(pincode))) return res.status(400).send({ status: false, msg: "We are looking for street ,city or pincode value only inside Address Object" })
+                if (!(isValid(street) || isValid(city) || isValid(pincode))) return res.status(400).send({ status: false, message: "We are looking for street ,city or pincode value only inside Address Object" })
                 else {
                     if (street) {
-                        if (!isValid(street)) return res.status(400).send({ status: false, msg: "street field is empty" });
-                        if (!street.match(streetregex)) return res.status(400).send({ status: false, msg: "street is invalid" })
+                        if (!isValid(street)) return res.status(400).send({ status: false, message: "street field is empty" });
+                        if (!street.match(streetregex)) return res.status(400).send({ status: false, message: "street is invalid" })
                         address.street = street.trim()
                     } 
                     if (city) {
-                        if (!isNotEmpty(city)) return res.status(400).send({ status: false, msg: "city field is empty" });
-                        if (!city.match(nameregex)) return res.status(400).send({ status: false, msg: "city name is not valid" })
+                        if (!isNotEmpty(city)) return res.status(400).send({ status: false, message: "city field is empty" });
+                        if (!city.match(nameregex)) return res.status(400).send({ status: false, message: "city name is not valid" })
                         address.city = city.trim()
                     } if (pincode) {
-                        if (!isNotEmpty(pincode)) return res.status(400).send({ status: false, msg: "pincode field is empty" });
-                        if (!pincode.match(pinregex)) return res.status(400).send({ status: false, msg: "pincode must contain only digit with 6 length" })
+                        if (!isNotEmpty(pincode)) return res.status(400).send({ status: false, message: "pincode field is empty" });
+                        if (!pincode.match(pinregex)) return res.status(400).send({ status: false, message: "pincode must contain only digit with 6 length" })
                         address.pincode = pincode.trim()
                     }
                 }
@@ -85,33 +85,35 @@ const createuser = async function (req, res) {
         }
             const userData = { title, name, phone, email, password, address }
             const newUser = await userModel.create(userData)
-            return res.status(201).send({ status: true, msg: "user created successfully", data: newUser })
+            return res.status(201).send({ status: true, message: "user created successfully", data: newUser })
 
     } catch (error) {
-            return res.status(500).send({ status: false, msg: error.message })
+            return res.status(500).send({ status: false, error: error.message })
         }
 }
 
 const loginUser = async function (req, res) {
         try {
+            if (isValidRequest(req.query))
+            return res.status(400).send({ status: false, message: "Data can passes only through Body" })
+
             let emailId = req.body.email
             let password = req.body.password
             if (!emailId || !password) {
-                return res.status(400).send({ status: false, msg: "please enter email and password" })
+                return res.status(400).send({ status: false, message: "please enter email and password" })
             }
             if (!emailId.match(emailregex))
-                return res.status(400).send({ status: false, msg: "email should be valid" })
+                return res.status(400).send({ status: false, message: "email should be valid" })
             if (!password.match(passwordregex))
-                return res.status(400).send({ status: false, msg: "password should be valid" })
+                return res.status(400).send({ status: false, message: "password should be valid" })
 
             const user = await userModel.findOne({ email: emailId, password: password })
             if (!user) {
-                return res.status(400).send({ status: false, msg: "email or password is not correct" })
+                return res.status(400).send({ status: false, message: "email or password is not correct" })
             } else {
                 const token = jwt.sign({
-                    userId: user._id.toString(),
-                    exp: Math.floor(Date.now()/100)
-                }, "Group34-Project-BookManagment");
+                    userId: user._id.toString()
+                }, "Group34-Project-BookManagment",{expiresIn:"90m"});
                 res.setHeader("x-api-key", token);
                 return res.status(201).send({ status: true, message: 'Success', data: token })
             }
