@@ -2,6 +2,7 @@ const bookModel = require("../Models/bookModel");
 const userModel = require("../Models/userModel");
 const reviewModel = require("../Models/reviewModel");
 const mongoose = require("mongoose");
+const moment=require('moment')
 
 /////////////////////validation functions/////////////////////////////
 
@@ -26,7 +27,9 @@ const isValidRequest = function (object) {
 
 const stringRegex = /^[a-zA-Z\. ]*$/;
 const ISBNregex = /^[6-9]{3}\-([\d]{10})$/;
-const releasedAtRgex = /^\d{4}-\d{2}-\d{2}$/;
+const releasedAtRgex =  function (datee){
+  return(/^\d{4}-\d{2}-\d{2}$/.test(datee) && moment(datee,"YYYY-MM-DD").isValid())
+};
 
 ////////////////////////////////Create Book Api/////////////////////////
 const createBook = async function (req, res) {
@@ -40,6 +43,8 @@ const createBook = async function (req, res) {
       return res.status(400).send({ status: false, message: "body is empty" });
     const { title, excerpt, userId, category, subcategory, ISBN, releasedAt } =
       bookData;
+    if(bookData.isDeleted!==false) return res.status(400).send({status:false,message:"isDeleted should not be true"})
+
     //*********Title VALIDATIONS**************8 */
     if (!isValidString(title))
       return res
@@ -64,11 +69,7 @@ const createBook = async function (req, res) {
         .send({ status: false, message: "excerpt is mandatory and valid" });
     //***********USERID VALIDATION************ */
 
-    if (!isValidObjectId(userId))
-      return res
-        .status(400)
-        .send({ status: false, message: "userId is invalid" });
-
+    
     //***********Category VALIDATIONS************ */
 
     if (!isValidString(category))
@@ -125,12 +126,12 @@ const createBook = async function (req, res) {
         .send({ status: false, message: "ISBN already used" });
 
     //***********releasedAt Validations******************** */
-    if (!releasedAtRgex.test(releasedAt))
+    if (!releasedAtRgex(releasedAt))
       return res
         .status(400)
         .send({
           status: false,
-          message: "releasedAt is mandatory and have yyyy-mm-dd format only",
+          message: "releasedAt is mandatory and must have valid yyyy-mm-dd format only",
         });
 
     const saveData = await bookModel.create(bookData);
@@ -156,10 +157,20 @@ const getBooks = async function (req, res) {
           message: "filters can passes only through query params",
         });
     const queryParams = req.query;
+  
     let filterCondition = { isDeleted: false };
     if (isValidRequest(queryParams)) {
       const { userId, category, subcategory } = queryParams;
-
+      
+      let arr=Object.keys(queryParams)
+      let idealFilters=["userId", "category", "subcategory"]
+      
+      for(let i=0;i<arr.length;i++){
+        if(!(idealFilters.includes(arr[i]))){
+          return res.status(400).send({status:false,message:"The filters can be only userId, category, subcategory"})
+        }
+      }
+      
       if (queryParams.hasOwnProperty("userId")) {
         if (!isValidObjectId(userId))
           return res
@@ -230,8 +241,8 @@ const getBooks = async function (req, res) {
           subcategory: 0,
           __v: 0,
           deletedAt: 0,
-        })
-        .sort({ title: 1 });
+        });
+       
       if (allBooks.length == 0)
         return res
           .status(404)
@@ -243,7 +254,9 @@ const getBooks = async function (req, res) {
           status: true,
           message: "book list",
           booksCount: allBooks.length,
-          booksList: allBooks,
+          booksList: allBooks.sort((a, b) =>
+          a.title.localeCompare(b.title)
+        ),
         });
     }
   } catch (err) {
@@ -259,7 +272,7 @@ const getBookById = async function (req, res) {
         .status(400)
         .send({
           status: false,
-          message: "Please enter valid blogId in params",
+          message: "Please enter valid bookId in params",
         });
     let book = await bookModel.findById(bookId);
     if (book == null || book.isDeleted == true) {
@@ -307,7 +320,7 @@ const updateBook = async function (req, res) {
         .status(400)
         .send({
           status: false,
-          message: "Please enter valid blogId in params",
+          message: "Please enter valid bookId in params",
         });
     const checkBook = await bookModel.findById(bookId);
     if (checkBook == null || checkBook.isDeleted == true) {
@@ -328,6 +341,14 @@ const updateBook = async function (req, res) {
         });
     }
     const { title, excerpt, releasedAt, ISBN } = bodyData;
+    let arr=Object.keys(bodyData)
+      let idealFilters=["title", "excerpt", "releasedAt", "ISBN"]
+      
+      for(let i=0;i<arr.length;i++){
+        if(!(idealFilters.includes(arr[i]))){
+          return res.status(400).send({status:false,message:"The body input can be only title, excerpt, releasedAt, ISBN"})
+        }
+      }
     let dataForUpdate = {};
     if (title) {
       if (!stringRegex.test(title))

@@ -1,6 +1,7 @@
     const bookModel = require("../Models/bookModel");
     const reviewModel = require("../Models/reviewModel");
     const mongoose=require('mongoose')
+    const moment=require('moment')
    
     
     const isValid = function (value) {
@@ -32,7 +33,11 @@
     
 
     const reviewedByRegex=/^[a-zA-Z\. ]*$/
-    const ratingRegex=/^[0-5]$/                                          ///^[0-5](.[0-9][0-9]?)?$/
+    const ratingRegex=/^[1-5]$/ 
+    const reviewedAtRgex =  function (datee){
+      return(/^\d{4}-\d{2}-\d{2}$/.test(datee) && datee == moment().format("YYYY-MM-DD"))
+    };
+    ///^[0-5](.[0-9][0-9]?)?$/
     //===================================POST API Review=======================================================
       
     const createReview = async function (req, res) {
@@ -45,22 +50,24 @@
             let bookbyBookId=await bookModel.findOne({_id:bookId, isDeleted:false})
             if(!bookbyBookId) return res.status(400).send({status:false,msg:`No book exist with this ${bookId} bookId`})
             
-            let {reviewedBy,rating, review}=reviewData 
-            reviewData['reviewedAt']=Date.now()
+            let {reviewedBy,rating, review, reviewedAt}=reviewData 
+            // reviewData['reviewedAt']=Date.now()
             reviewData['bookId']=bookId  
 
             if(!isValidRequest(reviewData)) return res.status(400).send({status: false, msg:"body is empty!"});
 
             //***************REVIEWED BY VALIDATIONS****************** 
-            if(reviewedBy){        
-            if((reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"Please enter valid reviewer's name"});
-           }
-           reviewedBy="Guest"
-    
+            
+            if(!reviewedAt) return res.status(400).send({status:false,message:"reviewedAt is must"})
+            if(!reviewedAtRgex(reviewedAt)) return res.status(400).send({staus:false,message:"The format of date should be YYYY-MM-DD and it should currrrent date!!"})
+            if(!reviewedBy){return res.status(400).send({status:false,message:"reviewedBy is mandatory"})}   
+            if(!(reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"Please enter valid reviewer's name"});
+           
+          
             //***************RATING VALIDATIONS******************
             if(!(rating)) return res.status(400).send({status:false,msg:"rating is required"})
              
-            if(!(ratingRegex.test(rating))) return res.status(400).send({status: false, msg:"rating should be number from 0 to 5"});
+            if(!(ratingRegex.test(rating))) return res.status(400).send({status: false, msg:"rating should be number from 1 to 5"});
               
             //***************REVIEW VALIDATIONS******************
             if(!review) return res.status(400).send({status:false,msg:"review is invalid"})
@@ -70,12 +77,14 @@
             let updateData= await bookModel.findOneAndUpdate({"_id":bookId},
                 {$set:{"reviews":bookbyBookId.reviews+1}}, 
                 {new:true})
-             // saveData._doc['reviewData'] 
+              
              saveData['isDeleted']=undefined
              saveData['__v']=undefined
              saveData['reviewedAt']=undefined
+            //  saveData._doc['updateData']=updateData
              saveData['updatedAt']=undefined
-            return res.status(201).send({ status: true, msg: "review created successfully", data: saveData });
+             updateData._doc['reviewsData']=saveData
+            return res.status(201).send({ status: true, msg: "review created successfully", data: updateData });
         } catch (error) {
             return res.status(500).send({ staus: false, msg: error.message })
         }
@@ -118,6 +127,14 @@
        }
     
        let{review, rating,reviewedBy}=requestBody
+       let arr=Object.keys(requestBody)
+      let idealFilters=["review", "rating", "reviewedBy"]
+      
+      for(let i=0;i<arr.length;i++){
+        if(!(idealFilters.includes(arr[i]))){
+          return res.status(400).send({status:false,message:"The body input can be only review, rating, reviewedBy"})
+        }
+      }
        let dataForUpdate={ }
        if(review){
 
@@ -128,13 +145,13 @@
         dataForUpdate.rating=rating
        }
        if(reviewedBy){
-        if((reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"reviewed by is not in proper format"});
+        if(!(reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"reviewed by is not in proper format"});
         dataForUpdate.reviewedBy=reviewedBy
        }
        
        const updatedata=await reviewModel.findByIdAndUpdate(
         {_id:reviewId},///condition
-        { dataForUpdate},//updation
+        {$set: dataForUpdate},//updation
         {new:true}).select({isDeleted:0,"__v":0,createdAt:0,updatedAt:0});
         
         const requiredOutput={
@@ -191,7 +208,7 @@
                 {$set:{"reviews":book.reviews-1}}, 
                 {new:true})
     
-           return res.status(200).send({ status: true,message:"Deleted Successfully",data:updatebook });        ////consfused about output
+           return res.status(200).send({ status: true,message:"Deleted Successfully" });    
           } catch (error) {
             res.status(500).send({ status: false, Error: error.message });
           }

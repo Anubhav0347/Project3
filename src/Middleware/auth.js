@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken")
 const bookModel = require("../Models/bookModel")
 
 const userModel=require("../Models/userModel")
+const mongoose = require("mongoose");
+
 const Authenticate = async function (req, res, next) {
     try {
         let token = req.headers["x-api-key"]
@@ -25,6 +27,8 @@ const Authenticate = async function (req, res, next) {
 const Autherization = async function (req, res, next) {
     try {
         const bookId = req.params["bookId"]
+        if(!bookId) return res.status(400).send({status:false,msg:"bookId is must"})
+        if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "bookId is invalid" });
         const decodedToken = req.decodedToken
         const bookbyBookId = await bookModel.findOne({ _id: bookId, isDeleted: false})
         if (!bookbyBookId) return res.status(404).send({ status: false, msg: `no books found by ${bookId}` })
@@ -34,10 +38,16 @@ const Autherization = async function (req, res, next) {
         return res.status(500).send({ status: false, msg: error.message })
     }
 }
+
+const isValidObjectId = (ObjectId) => {
+    return mongoose.Types.ObjectId.isValid(ObjectId)
+  }
+
 const AutherizationforCreate = async function (req, res, next) {
     try {
        const userId=req.body.userId
        if(!userId) return res.status(400).send({status:false,msg:"userId is must"})
+       if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "userId is invalid" });
        const decodedToken = req.decodedToken
        const userbyuserId= await userModel.findOne({"_id": userId, isDeleted: false})
        if(!userbyuserId){
@@ -51,4 +61,4 @@ const AutherizationforCreate = async function (req, res, next) {
 }
 
 
-module.exports = { Authenticate, Autherization,AutherizationforCreate}
+module.exports = { Authenticate, Autherization, AutherizationforCreate}

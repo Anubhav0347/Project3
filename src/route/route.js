@@ -11,7 +11,7 @@ const reviewController=require('../Controllers/reviewController')
 router.post('/register',userController.createuser)
 router.post('/login',userController.loginUser)
 router.post('/books',middlware.Authenticate,middlware.AutherizationforCreate,bookController.createBook)
-router.get('/books',bookController.getBooks)
+router.get('/books', middlware.Authenticate, bookController.getBooks)
 router.get('/books/:bookId',middlware.Authenticate,bookController.getBookById)
 router.delete('/books/:bookId',middlware.Authenticate,middlware.Autherization,bookController.deleteBook)
 router.put('/books/:bookId',middlware.Authenticate,middlware.Autherization,bookController.updateBook)
@@ -20,7 +20,7 @@ router.post('/books/:bookId/review',reviewController.createReview)
 router.put('/books/:bookId/review/:reviewId',reviewController.updateReview)
 router.delete('/books/:bookId/review/:reviewId',reviewController.deleteReview)
 
-router.all("/*/*", async function(req,res){
+router.all("/*", async function(req,res){
     return res.status(400).send({status:false,message:"plz check url"})
 })
 
