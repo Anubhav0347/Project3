@@ -4,7 +4,7 @@ const reviewModel = require("../Models/reviewModel");
 const mongoose = require("mongoose");
 const moment=require('moment')
 
-/////////////////////validation functions/////////////////////////////
+//========/validation functions/=============//
 
 const isValidString = function (value) {
   if (typeof value === "undefined" || value === null) return false;
@@ -23,7 +23,7 @@ const isValidRequest = function (object) {
   return Object.keys(object).length > 0;
 };
 
-////////////////////////validation regex//////////////////////////////
+//========validation regex==============//
 
 const stringRegex = /^[a-zA-Z\. ]*$/;
 const ISBNregex = /^[6-9]{3}\-([\d]{10})$/;
@@ -31,7 +31,7 @@ const releasedAtRgex =  function (datee){
   return(/^\d{4}-\d{2}-\d{2}$/.test(datee) && moment(datee,"YYYY-MM-DD").isValid())
 };
 
-////////////////////////////////Create Book Api/////////////////////////
+//=====================================Create Book Api=====================================//
 const createBook = async function (req, res) {
   try {
     if (isValidRequest(req.query))
@@ -45,7 +45,7 @@ const createBook = async function (req, res) {
       bookData;
     if(bookData.isDeleted!==false) return res.status(400).send({status:false,message:"isDeleted should not be true"})
 
-    //*********Title VALIDATIONS**************8 */
+    //*********Title VALIDATIONS*******************
     if (!isValidString(title))
       return res
         .status(400)
@@ -61,16 +61,14 @@ const createBook = async function (req, res) {
         .status(400)
         .send({ status: false, message: "title already exist " });
 
-    //***********Excerpt VALIDATIONS**********8 */
+    //***********Excerpt VALIDATIONS****************
 
     if (!isValidString(excerpt))
       return res
         .status(400)
         .send({ status: false, message: "excerpt is mandatory and valid" });
-    //***********USERID VALIDATION************ */
-
     
-    //***********Category VALIDATIONS************ */
+    //***********Category VALIDATIONS****************
 
     if (!isValidString(category))
       return res
@@ -83,7 +81,7 @@ const createBook = async function (req, res) {
           status: false,
           message: "category can conatin only alphabets",
         });
-
+//***********SubCategory VALIDATIONS*****************
     if (!isValidString(subcategory))
       return res
         .status(400)
@@ -96,7 +94,7 @@ const createBook = async function (req, res) {
           message: "subcategory can conatin only alphabets",
         });
 
-    //**********Reviews Validations*************** */
+    //**********Reviews Validations*********************
 
     if (bookData.reviews) {
       if (bookData.reviews !== 0)
@@ -107,7 +105,7 @@ const createBook = async function (req, res) {
             message: "reviews should not be greater than zero or less than",
           });
     }
-    //***********ISBN Validations******************** */
+    //***********ISBN Validations***********************
 
     if (!bookData.ISBN)
       return res
@@ -115,7 +113,6 @@ const createBook = async function (req, res) {
         .send({ status: false, message: "ISBN not present" });
 
     if (!ISBNregex.test(ISBN))
-      //(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)
       return res
         .status(400)
         .send({ status: false, message: " ISBN is not in proper format" });
@@ -125,7 +122,7 @@ const createBook = async function (req, res) {
         .status(400)
         .send({ status: false, message: "ISBN already used" });
 
-    //***********releasedAt Validations******************** */
+    //***********releasedAt Validations********************
     if (!releasedAtRgex(releasedAt))
       return res
         .status(400)
@@ -147,6 +144,9 @@ const createBook = async function (req, res) {
   }
 };
 
+
+//====================================GET BOOK API============================================//
+
 const getBooks = async function (req, res) {
   try {
     if (isValidRequest(req.body))
@@ -154,7 +154,7 @@ const getBooks = async function (req, res) {
         .status(400)
         .send({
           status: false,
-          message: "filters can passes only through query params",
+          message: "filters can pass only through query params",
         });
     const queryParams = req.query;
   
@@ -170,7 +170,7 @@ const getBooks = async function (req, res) {
           return res.status(400).send({status:false,message:"The filters can be only userId, category, subcategory"})
         }
       }
-      
+      //****************USERID VALIDATIONS************************
       if (queryParams.hasOwnProperty("userId")) {
         if (!isValidObjectId(userId))
           return res
@@ -183,6 +183,7 @@ const getBooks = async function (req, res) {
             .send({ status: false, message: "no author found" });
         filterCondition["userId"] = userId;
       }
+      //******************CATEGORY VALIDATIONS*******************
       if (queryParams.hasOwnProperty("category")) {
         if (!isValidString(category))
           return res
@@ -193,6 +194,7 @@ const getBooks = async function (req, res) {
             });
         filterCondition["category"] = category.trim();
       }
+      //********************SUBCATEGORY VALIDATIONS****************
       if (queryParams.hasOwnProperty("subcategory")) {
         if (!isValidString(subcategory))
           return res
@@ -264,6 +266,7 @@ const getBooks = async function (req, res) {
   }
 };
 
+//==============================GET BOOK BI API=============================================//
 const getBookById = async function (req, res) {
   try {
     const bookId = req.params.bookId;
@@ -312,6 +315,8 @@ const getBookById = async function (req, res) {
   }
 };
 
+//=============================UPDATE API=====================================================//
+
 const updateBook = async function (req, res) {
   try {
     const bookId = req.params.bookId;
@@ -350,6 +355,8 @@ const updateBook = async function (req, res) {
         }
       }
     let dataForUpdate = {};
+
+    //****************TITLE VALIDATIONS**************
     if (title) {
       if (!stringRegex.test(title))
         return res
@@ -366,6 +373,7 @@ const updateBook = async function (req, res) {
           });
       dataForUpdate.title = title;
     }
+    //*******************ISBN VALIDATIONS**********
     if (ISBN) {
       if (!ISBNregex.test(ISBN))
         return res
@@ -381,6 +389,7 @@ const updateBook = async function (req, res) {
           });
       dataForUpdate.ISBN = ISBN;
     }
+    //***********EXCERPT VALIDATIONS******************
     if (excerpt) {
       dataForUpdate.excerpt = excerpt;
     }
@@ -410,6 +419,7 @@ const updateBook = async function (req, res) {
   }
 };
 
+//===========================DELETE API===================================================//
 const deleteBook = async function (req, res) {
   try {
     let reqbody = req.body;
@@ -434,7 +444,7 @@ const deleteBook = async function (req, res) {
     if (!bookbyBookId)
       return res
         .status(400)
-        .send({ status: false, message: `no blog found by ${bookId}` });
+        .send({ status: false, message: `no bOOK found by ${bookId}` });
     await bookModel.findByIdAndUpdate(
       { _id: bookId },
       { $set: { isDeleted: true, deletedAt: Date.now() } },
@@ -447,6 +457,8 @@ const deleteBook = async function (req, res) {
     return res.status(500).send({ status: false, error: err.message });
   }
 };
+
+
 module.exports.createBook = createBook;
 module.exports.getBooks = getBooks;
 module.exports.deleteBook = deleteBook;

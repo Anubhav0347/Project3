@@ -38,7 +38,7 @@
       return(/^\d{4}-\d{2}-\d{2}$/.test(datee) && datee == moment().format("YYYY-MM-DD"))
     };
     ///^[0-5](.[0-9][0-9]?)?$/
-    //===================================POST API Review=======================================================
+    //===================================POST API Review===========================================//
       
     const createReview = async function (req, res) {
         try {
@@ -89,11 +89,9 @@
             return res.status(500).send({ staus: false, msg: error.message })
         }
       };
-    
+  
 
-
-//=====================================Update API REVIEW========================================================
-    
+//=====================================Update API REVIEW=============================================//
 
   const updateReview=async function(req,res){
     try{
@@ -107,6 +105,7 @@
         if(book==null  || book.isDeleted==true){
             return res.status(404).send({status:false,message:"No book found with this bookId or it may be deleted"})
         } 
+        //***************ReviewId VALIDATIONS************
         const reviewId=req.params.reviewId
         if(!isValidObjectId(reviewId))
         return res.status(400).send({status:false,msg:"Please enter valid reviewId in params"})
@@ -135,6 +134,7 @@
           return res.status(400).send({status:false,message:"The body input can be only review, rating, reviewedBy"})
         }
       }
+      //******************RATING VALIDATIONS******************** */
        let dataForUpdate={ }
        if(review){
 
@@ -144,6 +144,7 @@
         if(!(ratingRegex.test(rating))) return res.status(400).send({status: false, msg:"rating is not in proper format"});
         dataForUpdate.rating=rating
        }
+       //****************ReviewedBy VALIDATIONS******************
        if(reviewedBy){
         if(!(reviewedByRegex.test(reviewedBy))) return res.status(400).send({status: false, msg:"reviewed by is not in proper format"});
         dataForUpdate.reviewedBy=reviewedBy
@@ -175,7 +176,8 @@
     }
     
     }
-    //=====================================DELETE API REVIEW========================================================
+    
+//=====================================DELETE API REVIEW===============================================//
     
     const deleteReview = async function (req, res) {
           try {
@@ -187,7 +189,7 @@
             if (book==null || book.isDeleted == true) {
               return res.status(404).send({ status: false, message: `No book exists with ${bookId} bookId or it may be deleted` });
             }
-    
+              //*********************ReviewId VALIDATIONS************
             let reviewId = req.params.reviewId; 
             if(!isValidObjectId(reviewId)) return res.status(400).send({status:false,message:"Please enter valid reviewId in params"})
        
@@ -214,10 +216,7 @@
           }
         };
     
-    
-    
-
-
+  
 
 module.exports.createReview=createReview
 module.exports.updateReview=updateReview

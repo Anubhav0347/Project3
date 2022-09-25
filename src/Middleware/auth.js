@@ -45,6 +45,7 @@ const isValidObjectId = (ObjectId) => {
 
 const AutherizationforCreate = async function (req, res, next) {
     try {
+        //***********USERID VALIDATION************ */
        const userId=req.body.userId
        if(!userId) return res.status(400).send({status:false,msg:"userId is must"})
        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "userId is invalid" });
@@ -53,6 +54,7 @@ const AutherizationforCreate = async function (req, res, next) {
        if(!userbyuserId){
         return res.status(400).send({status:false,message:`Enter valid userId ${userId}, userId does not found`})
        }
+       //************AUTHORIZATION**************
         if (decodedToken.userId !=userbyuserId._id) return res.status(403).send({ status: false, message: "unauthorize access" });
         next()
     } catch (error) {

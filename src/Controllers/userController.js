@@ -1,5 +1,6 @@
 const userModel = require("../Models/userModel")
 const jwt = require('jsonwebtoken')
+
 const isNotEmpty=function(value){
     if(value.trim().length!=0)
     return true; 
@@ -18,6 +19,8 @@ const isValidRequest = function (object) {
 const isValidTitle = function (title) {
     return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1
 }
+
+//*******REGEX********** 
 const nameregex = /^[a-zA-Z\. ]*$/
 const phoneregex = /^([6-9]\d{9})$/
 const emailregex = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/
@@ -25,6 +28,7 @@ const passwordregex = /^[a-zA-Z0-9!@#$%^&*]{8,15}$/
 const pinregex=       /^\d{6}$/
 const streetregex=/^[0-9\\\/# ,a-zA-Z]+[ ,]+[0-9\\\/#, a-zA-Z]{1,}$/
 
+//===============================USER POST API======================================================//
 const createuser = async function (req, res) {
     try {
         let reqquery = req.query
@@ -34,33 +38,45 @@ const createuser = async function (req, res) {
         if (!isValidRequest(reqbody))
             return res.status(400).send({ status: false, message: "body should not be empty" })
         const { title, name, phone, email, password, address } = reqbody
+        
+            //*****************TITLE VALIDATIONS************** 
         if (!isValid(title))
             return res.status(400).send({ status: false, message: "title is required" })
         if (!isValidTitle(title))
             return res.status(400).send({ status: false, message: "title shoud be among Mr, Mrs, and Miss" })
-        if (!isValid(name))
+        
+            //*****************NAME VALIDATIONS**************
+            if (!isValid(name))
             return res.status(400).send({ status: false, message: "name is required" })
         if (!name.match(nameregex))
             return res.status(400).send({ status: false, message: "name must be in a valid format" })
-        if (!isValid(phone))
+        
+            //*****************PHONE VALIDATIONS**************
+            if (!isValid(phone))
             return res.status(400).send({ status: false, message: "phone number must be prasent" })
         if (!phone.match(phoneregex))
             return res.status(400).send({ status: false, message: "phone number must be in a valid format" })
         const isPhoneAlreadyUsed = await userModel.findOne({ phone: phone })
         if (isPhoneAlreadyUsed)
             return res.status(400).send({ status: false, message: "phone number already registered" })
-        if (!isValid(email))
+        
+            //*****************EMAIL VALIDATIONS**************
+            if (!isValid(email))
             return res.status(400).send({ status: false, message: "email is required" })
         if (!email.match(emailregex))
             return res.status(400).send({ status: false, message: "email should be valid" })
         let emailAlreadyUsed = await userModel.findOne({ email: email })
         if (emailAlreadyUsed)
             return res.status(400).send({ status: false, message: "email already registered" })
-        if (!isValid(password))
+        
+            //*****************PASSWORD VALIDATIONS**************
+            if (!isValid(password))
             return res.status(400).send({ status: false, message: "password is required" })
         if (!password.match(passwordregex))
             return res.status(400).send({ status: false, message: "password should be valid" })
-        if (address) {
+        
+            //*****************ADDRESS VALIDATIONS**************
+            if (address) {
             if (Object.keys(address).length == 0) return res.status(400).send({ status: false, message: "Address must contain street, city, pincode" })
             else {
                 const { street, city, pincode } = address
@@ -92,6 +108,7 @@ const createuser = async function (req, res) {
         }
 }
 
+//===============================LOGIN POST API======================================================//
 const loginUser = async function (req, res) {
         try {
             if (isValidRequest(req.query))
