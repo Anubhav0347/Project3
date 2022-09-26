@@ -41,10 +41,8 @@ const createBook = async function (req, res) {
     const bookData = req.body;
     if (!isValidRequest(bookData))
       return res.status(400).send({ status: false, message: "body is empty" });
-    const { title, excerpt, userId, category, subcategory, ISBN, releasedAt } =
-      bookData;
-    if(bookData.isDeleted!==false) return res.status(400).send({status:false,message:"isDeleted should not be true"})
-
+    const { title, excerpt,  category, subcategory, ISBN, releasedAt } = bookData;
+    
     //*********Title VALIDATIONS*******************
     if (!isValidString(title))
       return res
@@ -81,7 +79,7 @@ const createBook = async function (req, res) {
           status: false,
           message: "category can conatin only alphabets",
         });
-//***********SubCategory VALIDATIONS*****************
+  //***********SubCategory VALIDATIONS*****************
     if (!isValidString(subcategory))
       return res
         .status(400)
@@ -266,7 +264,7 @@ const getBooks = async function (req, res) {
   }
 };
 
-//==============================GET BOOK BI API=============================================//
+//==============================GET BOOK BY id API=============================================//
 const getBookById = async function (req, res) {
   try {
     const bookId = req.params.bookId;
